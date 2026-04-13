@@ -1,271 +1,215 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de Producción</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f7f6; padding: 20px; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
-    #app-view { display: none; }
-    .table-responsive { margin-top: 30px; }
+    body { background-color: #f0f2f5; font-family: sans-serif; padding: 20px; }
+    .card-app { max-width: 850px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    #app-content { display: none; }
+    .btn-save { background-color: #28a745; color: white; border: none; font-weight: bold; }
+    .btn-save:hover { background-color: #218838; color: white; }
+    .historial-container { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
   </style>
 </head>
 <body>
 
-  <div class="container" id="login-view">
-    <h2 class="text-center mb-4">Acceso Operarios</h2>
+<div class="card-app">
+  <div id="login-section">
+    <h3 class="text-center mb-4">Acceso Producción</h3>
     <div class="mb-3">
-      <label>Usuario</label>
-      <input type="text" id="username" class="form-control">
+      <label class="form-label">Usuario</label>
+      <input type="text" id="user" class="form-control">
     </div>
     <div class="mb-3">
-      <label>Contraseña</label>
-      <input type="password" id="password" class="form-control">
+      <label class="form-label">Contraseña</label>
+      <input type="password" id="pass" class="form-control">
     </div>
-    <button class="btn btn-primary w-100" onclick="iniciarSesion()" id="btn-login">Entrar</button>
-    <div id="login-error" class="text-danger mt-2 text-center" style="display:none;">Credenciales incorrectas</div>
+    <button class="btn btn-primary w-100" id="loginBtn" onclick="handleLogin()">Iniciar Sesión</button>
+    <div id="errMsg" class="text-danger mt-3 text-center" style="display:none;">Error de usuario o conexión</div>
   </div>
 
-  <div class="container" id="app-view">
+  <div id="app-content">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3 id="welcome-msg"></h3>
-      <button class="btn btn-outline-danger btn-sm" onclick="cerrarSesion()">Salir</button>
+      <h4 id="userTag" class="text-primary m-0"></h4>
+      <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Cerrar Sesión</button>
     </div>
 
-    <form id="prodForm">
-      <input type="hidden" id="recordId">
-
+    <form id="formProduccion">
+      <input type="hidden" id="rowId">
       <div class="row g-3">
-        <div class="col-md-6">
-          <label>Día</label>
-          <input type="number" id="dia" class="form-control" min="1" max="31" required>
-        </div>
-        <div class="col-md-6">
-          <label>Mes</label>
-          <input type="number" id="mes" class="form-control" min="1" max="12" required>
-        </div>
+        <div class="col-6 col-md-3"><label>Día</label><input type="number" id="dia" class="form-control" required></div>
+        <div class="col-6 col-md-3"><label>Mes</label><input type="number" id="mes" class="form-control" required></div>
+        <div class="col-md-3"><label>Turno</label><select id="turno" class="form-select" required></select></div>
+        <div class="col-md-3"><label>Prensa</label><select id="prensa" class="form-select" required></select></div>
         
-        <div class="col-md-6">
-          <label>Turno</label>
-          <select id="turno" class="form-select" required></select>
-        </div>
-        <div class="col-md-6">
-          <label>Número de Prensa</label>
-          <select id="prensa" class="form-select" required></select>
-        </div>
-
-        <div class="col-md-6">
-          <label>Referencia de la Pieza</label>
-          <select id="referencia" class="form-select" required></select>
-        </div>
-        <div class="col-md-6">
-          <label>Tipo de Material</label>
-          <select id="material" class="form-select" required></select>
-        </div>
-
-        <div class="col-md-12">
-          <label>Lote Bobina</label>
-          <input type="text" id="lote" class="form-control" required>
-        </div>
-
-        <div class="col-md-3">
-          <label>Total Piezas</label>
-          <input type="number" id="total" class="form-control" required>
-        </div>
-        <div class="col-md-3">
-          <label>Total Buenas</label>
-          <input type="number" id="buenas" class="form-control" required>
-        </div>
-        <div class="col-md-3">
-          <label>A Revisar</label>
-          <input type="number" id="revisar" class="form-control" required>
-        </div>
-        <div class="col-md-3">
-          <label>Total Malas</label>
-          <input type="number" id="malas" class="form-control" required>
-        </div>
-
-        <div class="col-12">
-          <label>Observaciones</label>
-          <textarea id="observaciones" class="form-control" rows="2"></textarea>
-        </div>
-
+        <div class="col-md-6"><label>Referencia</label><select id="referencia" class="form-select" required></select></div>
+        <div class="col-md-6"><label>Material</label><select id="material" class="form-select" required></select></div>
+        
+        <div class="col-12"><label>Lote Bobina</label><input type="text" id="lote" class="form-control" required></div>
+        
+        <div class="col-6 col-md-3 text-primary"><label>Total Piezas</label><input type="number" id="total" class="form-control" required></div>
+        <div class="col-6 col-md-3 text-success"><label>Buenas</label><input type="number" id="buenas" class="form-control" required></div>
+        <div class="col-6 col-md-3 text-warning"><label>A Revisar</label><input type="number" id="revisar" class="form-control" required></div>
+        <div class="col-6 col-md-3 text-danger"><label>Malas</label><input type="number" id="malas" class="form-control" required></div>
+        
+        <div class="col-12"><label>Observaciones</label><textarea id="obs" class="form-control" rows="2"></textarea></div>
+        
         <div class="col-12 mt-4">
-          <button type="button" class="btn btn-success w-100" onclick="guardarFormulario()" id="btn-save">Guardar Producción</button>
+          <button type="button" class="btn btn-save w-100 p-2" id="saveBtn" onclick="saveData()">GRABAR EN EXCEL</button>
         </div>
       </div>
     </form>
 
-    <h4 class="mt-5">Mis producciones recientes</h4>
-    <div class="table-responsive">
-      <table class="table table-sm table-striped">
-        <thead>
-          <tr>
-            <th>Día/Mes</th><th>Turno</th><th>Ref</th><th>Total</th><th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-registros">
-          </tbody>
-      </table>
+    <div class="historial-container">
+      <h5>Mis registros grabados</h5>
+      <div class="table-responsive">
+        <table class="table table-hover mt-2">
+          <thead class="table-dark">
+            <tr><th>Fecha</th><th>Ref</th><th>Total</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="listaData"></tbody>
+        </table>
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    let operarioActual = "";
-    let misDatos = [];
+<script>
+  // ==========================================
+  // CONFIGURACIÓN: COPIA TU URL AQUÍ ABAJO
+  // ==========================================
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzP46sUeQONRX68C9DPX2_i22vdQY7NuSosVjKU-4k73i5uLvwNWvY44QVgAp3V2cUv5w/exec"; 
+  // ==========================================
 
-    function iniciarSesion() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
-      const btn = document.getElementById("btn-login");
-      
-      btn.innerText = "Verificando...";
-      btn.disabled = true;
+  let currentOperario = "";
+  let cacheData = [];
 
-      google.script.run.withSuccessHandler(function(res) {
-        btn.innerText = "Entrar";
-        btn.disabled = false;
-        
-        if(res.success) {
-          operarioActual = res.user;
-          document.getElementById("login-view").style.display = "none";
-          document.getElementById("app-view").style.display = "block";
-          document.getElementById("welcome-msg").innerText = "Hola, " + operarioActual;
-          document.getElementById("login-error").style.display = "none";
-          
-          cargarDesplegables();
-          cargarTabla();
-        } else {
-          document.getElementById("login-error").style.display = "block";
-        }
-      }).verificarLogin(user, pass);
+  async function postToGoogle(payload) {
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (e) {
+      console.error(e);
+      return null;
     }
+  }
 
-    function cerrarSesion() {
-      operarioActual = "";
-      document.getElementById("prodForm").reset();
-      document.getElementById("recordId").value = "";
-      document.getElementById("app-view").style.display = "none";
-      document.getElementById("login-view").style.display = "block";
-      document.getElementById("username").value = "";
-      document.getElementById("password").value = "";
+  async function handleLogin() {
+    const u = document.getElementById("user").value;
+    const p = document.getElementById("pass").value;
+    const b = document.getElementById("loginBtn");
+    
+    if(!u || !p) return;
+    b.disabled = true; b.innerText = "Conectando...";
+
+    const res = await postToGoogle({ action: "login", usuario: u, password: p });
+    
+    if(res && res.success) {
+      currentOperario = res.user;
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("app-content").style.display = "block";
+      document.getElementById("userTag").innerText = "Operario: " + currentOperario;
+      loadConfig();
+      loadHistory();
+    } else {
+      document.getElementById("errMsg").style.display = "block";
+      b.disabled = false; b.innerText = "Iniciar Sesión";
     }
+  }
 
-    function cargarDesplegables() {
-      google.script.run.withSuccessHandler(function(listas) {
-        llenarSelect("turno", listas.turnos);
-        llenarSelect("referencia", listas.referencias);
-        llenarSelect("prensa", listas.prensas);
-        llenarSelect("material", listas.materiales);
-      }).obtenerConfiguracion();
+  async function loadConfig() {
+    const cfg = await postToGoogle({ action: "getConfig" });
+    if(cfg) {
+      fillSelect("turno", cfg.turnos);
+      fillSelect("prensa", cfg.prensas);
+      fillSelect("referencia", cfg.referencias);
+      fillSelect("material", cfg.materiales);
     }
+  }
 
-    function llenarSelect(id, opciones) {
-      const select = document.getElementById(id);
-      select.innerHTML = '<option value="">Seleccione...</option>';
-      opciones.forEach(op => {
-        let option = document.createElement("option");
-        option.text = op; option.value = op;
-        select.add(option);
+  function fillSelect(id, items) {
+    const s = document.getElementById(id);
+    s.innerHTML = '<option value="">Seleccionar...</option>';
+    items.forEach(i => s.add(new Option(i, i)));
+  }
+
+  async function saveData() {
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true; btn.innerText = "Grabando en Excel...";
+
+    const registro = {
+      id: document.getElementById("rowId").value,
+      operario: currentOperario,
+      dia: document.getElementById("dia").value, mes: document.getElementById("mes").value,
+      turno: document.getElementById("turno").value, prensa: document.getElementById("prensa").value,
+      referencia: document.getElementById("referencia").value, material: document.getElementById("material").value,
+      lote: document.getElementById("lote").value, total: document.getElementById("total").value,
+      buenas: document.getElementById("buenas").value, revisar: document.getElementById("revisar").value,
+      malas: document.getElementById("malas").value, observaciones: document.getElementById("obs").value
+    };
+
+    const res = await postToGoogle({ action: "save", registro: registro });
+    if(res && res.success) {
+      alert(res.message);
+      document.getElementById("formProduccion").reset();
+      document.getElementById("rowId").value = "";
+      loadHistory();
+    }
+    btn.disabled = false; btn.innerText = "GRABAR EN EXCEL";
+  }
+
+  async function loadHistory() {
+    const data = await postToGoogle({ action: "getRecords", operario: currentOperario });
+    if(data) {
+      cacheData = data;
+      const t = document.getElementById("listaData");
+      t.innerHTML = "";
+      data.forEach(r => {
+        t.innerHTML += `<tr>
+          <td>${r.dia}/${r.mes}</td>
+          <td>${r.referencia}</td>
+          <td>${r.total}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editRow('${r.id}')">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteRow('${r.id}')">🗑️</button>
+          </td>
+        </tr>`;
       });
     }
+  }
 
-    function guardarFormulario() {
-      // Validar campos obligatorios básicos
-      const req = ["dia","mes","turno","prensa","referencia","material","lote","total","buenas","revisar","malas"];
-      for(let r of req) {
-        if(!document.getElementById(r).value) {
-          alert("Por favor rellena todos los campos obligatorios.");
-          return;
-        }
-      }
+  function editRow(id) {
+    const r = cacheData.find(x => x.id === id);
+    if(!r) return;
+    document.getElementById("rowId").value = r.id;
+    document.getElementById("dia").value = r.dia;
+    document.getElementById("mes").value = r.mes;
+    document.getElementById("turno").value = r.turno;
+    document.getElementById("prensa").value = r.prensa;
+    document.getElementById("referencia").value = r.referencia;
+    document.getElementById("material").value = r.material;
+    document.getElementById("lote").value = r.lote;
+    document.getElementById("total").value = r.total;
+    document.getElementById("buenas").value = r.buenas;
+    document.getElementById("revisar").value = r.revisar;
+    document.getElementById("malas").value = r.malas;
+    document.getElementById("obs").value = r.observaciones;
+    window.scrollTo(0,0);
+  }
 
-      const btn = document.getElementById("btn-save");
-      btn.innerText = "Guardando...";
-      btn.disabled = true;
-
-      const registro = {
-        id: document.getElementById("recordId").value, // Estará vacío si es nuevo, lleno si es edición
-        operario: operarioActual,
-        dia: document.getElementById("dia").value,
-        mes: document.getElementById("mes").value,
-        turno: document.getElementById("turno").value,
-        prensa: document.getElementById("prensa").value,
-        referencia: document.getElementById("referencia").value,
-        material: document.getElementById("material").value,
-        lote: document.getElementById("lote").value,
-        total: document.getElementById("total").value,
-        buenas: document.getElementById("buenas").value,
-        revisar: document.getElementById("revisar").value,
-        malas: document.getElementById("malas").value,
-        observaciones: document.getElementById("observaciones").value
-      };
-
-      google.script.run.withSuccessHandler(function(res) {
-        alert(res.message);
-        document.getElementById("prodForm").reset(); // Limpia los campos
-        document.getElementById("recordId").value = ""; // Resetea el ID oculto
-        btn.innerText = "Guardar Producción";
-        btn.disabled = false;
-        cargarTabla(); // Recarga la tabla de abajo
-      }).guardarProduccion(registro);
+  async function deleteRow(id) {
+    if(confirm("¿Borrar definitivamente este registro del Excel?")) {
+      const res = await postToGoogle({ action: "delete", id: id });
+      if(res) loadHistory();
     }
-
-    function cargarTabla() {
-      google.script.run.withSuccessHandler(function(registros) {
-        misDatos = registros;
-        const tbody = document.getElementById("tabla-registros");
-        tbody.innerHTML = "";
-        
-        registros.forEach(r => {
-          let tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${r.dia}/${r.mes}</td>
-            <td>${r.turno}</td>
-            <td>${r.referencia}</td>
-            <td>${r.total}</td>
-            <td>
-              <button class="btn btn-sm btn-warning" onclick="editarRegistro('${r.id}')">Editar</button>
-              <button class="btn btn-sm btn-danger" onclick="borrarRegistro('${r.id}')">Borrar</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }).obtenerMisRegistros(operarioActual);
-    }
-
-    function editarRegistro(id) {
-      const r = misDatos.find(x => x.id === id);
-      if(r) {
-        document.getElementById("recordId").value = r.id;
-        document.getElementById("dia").value = r.dia;
-        document.getElementById("mes").value = r.mes;
-        document.getElementById("turno").value = r.turno;
-        document.getElementById("prensa").value = r.prensa;
-        document.getElementById("referencia").value = r.referencia;
-        document.getElementById("material").value = r.material;
-        document.getElementById("lote").value = r.lote;
-        document.getElementById("total").value = r.total;
-        document.getElementById("buenas").value = r.buenas;
-        document.getElementById("revisar").value = r.revisar;
-        document.getElementById("malas").value = r.malas;
-        document.getElementById("observaciones").value = r.observaciones;
-        
-        window.scrollTo(0, 0); // Sube arriba para que el usuario vea el formulario
-      }
-    }
-
-    function borrarRegistro(id) {
-      if(confirm("¿Estás seguro de que quieres borrar este registro? Esta acción actualizará la base de datos permanentemente.")) {
-        google.script.run.withSuccessHandler(function(success) {
-          if(success) {
-            cargarTabla();
-          } else {
-            alert("Error al borrar");
-          }
-        }).eliminarRegistro(id);
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
