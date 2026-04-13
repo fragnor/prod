@@ -3,212 +3,210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Control de Producción</title>
+  <title>Sistema Producción y Averías</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f0f2f5; font-family: sans-serif; padding: 20px; }
-    .card-app { max-width: 850px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    body { background-color: #f8f9fa; padding: 15px; }
+    .main-card { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     #app-content { display: none; }
-    .btn-save { background-color: #28a745; color: white; border: none; font-weight: bold; }
-    .btn-save:hover { background-color: #218838; color: white; }
-    .historial-container { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+    .nav-tabs { margin-bottom: 20px; }
+    .form-label { font-weight: 600; font-size: 0.9rem; }
   </style>
 </head>
 <body>
 
-<div class="card-app">
+<div class="main-card">
   <div id="login-section">
-    <h3 class="text-center mb-4">Acceso Producción</h3>
-    <div class="mb-3">
-      <label class="form-label">Usuario</label>
-      <input type="text" id="user" class="form-control">
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Contraseña</label>
-      <input type="password" id="pass" class="form-control">
-    </div>
-    <button class="btn btn-primary w-100" id="loginBtn" onclick="handleLogin()">Iniciar Sesión</button>
-    <div id="errMsg" class="text-danger mt-3 text-center" style="display:none;">Error de usuario o conexión</div>
+    <h4 class="text-center mb-4">Acceso Planta</h4>
+    <input type="text" id="user" class="form-control mb-2" placeholder="Usuario">
+    <input type="password" id="pass" class="form-control mb-3" placeholder="Contraseña">
+    <button class="btn btn-primary w-100" onclick="handleLogin()">Entrar</button>
   </div>
 
   <div id="app-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 id="userTag" class="text-primary m-0"></h4>
-      <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Cerrar Sesión</button>
+    <div class="d-flex justify-content-between mb-3">
+      <span id="userTag" class="badge bg-secondary p-2"></span>
+      <button class="btn btn-sm btn-link text-danger" onclick="location.reload()">Salir</button>
     </div>
 
-    <form id="formProduccion">
-      <input type="hidden" id="rowId">
-      <div class="row g-3">
-        <div class="col-6 col-md-3"><label>Día</label><input type="number" id="dia" class="form-control" required></div>
-        <div class="col-6 col-md-3"><label>Mes</label><input type="number" id="mes" class="form-control" required></div>
-        <div class="col-md-3"><label>Turno</label><select id="turno" class="form-select" required></select></div>
-        <div class="col-md-3"><label>Prensa</label><select id="prensa" class="form-select" required></select></div>
-        
-        <div class="col-md-6"><label>Referencia</label><select id="referencia" class="form-select" required></select></div>
-        <div class="col-md-6"><label>Material</label><select id="material" class="form-select" required></select></div>
-        
-        <div class="col-12"><label>Lote Bobina</label><input type="text" id="lote" class="form-control" required></div>
-        
-        <div class="col-6 col-md-3 text-primary"><label>Total Piezas</label><input type="number" id="total" class="form-control" required></div>
-        <div class="col-6 col-md-3 text-success"><label>Buenas</label><input type="number" id="buenas" class="form-control" required></div>
-        <div class="col-6 col-md-3 text-warning"><label>A Revisar</label><input type="number" id="revisar" class="form-control" required></div>
-        <div class="col-6 col-md-3 text-danger"><label>Malas</label><input type="number" id="malas" class="form-control" required></div>
-        
-        <div class="col-12"><label>Observaciones</label><textarea id="obs" class="form-control" rows="2"></textarea></div>
-        
-        <div class="col-12 mt-4">
-          <button type="button" class="btn btn-save w-100 p-2" id="saveBtn" onclick="saveData()">GRABAR EN EXCEL</button>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="prod-tab" data-bs-toggle="tab" data-bs-target="#prod-panel" type="button" onclick="checkDataLoss(event)">Producción</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="averia-tab" data-bs-toggle="tab" data-bs-target="#averia-panel" type="button" onclick="checkDataLoss(event)">Averías</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="prod-panel">
+        <form id="formProd">
+          <input type="hidden" id="rowId">
+          <div class="row g-2">
+            <div class="col-4"><label class="form-label">Día</label><input type="number" id="dia" class="form-control" required onchange="markDirty()"></div>
+            <div class="col-4"><label class="form-label">Mes</label><input type="number" id="mes" class="form-control" required onchange="markDirty()"></div>
+            <div class="col-4"><label class="form-label">Horas</label><input type="number" step="0.1" id="horas" class="form-control" required onchange="markDirty()"></div>
+            
+            <div class="col-6"><label class="form-label">Turno</label><select id="turno" class="form-select" required onchange="markDirty()"></select></div>
+            <div class="col-6"><label class="form-label">Prensa</label><select id="prensa" class="form-select" required onchange="markDirty()"></select></div>
+            
+            <div class="col-6"><label class="form-label">Referencia</label><select id="referencia" class="form-select" required onchange="markDirty()"></select></div>
+            <div class="col-6"><label class="form-label">Material</label><select id="material" class="form-select" required onchange="markDirty()"></select></div>
+            
+            <div class="col-12"><label class="form-label">Lote Bobina</label><input type="text" id="lote" class="form-control" required onchange="markDirty()"></div>
+            
+            <div class="col-3"><label class="form-label text-primary">Total</label><input type="number" id="total" class="form-control border-primary" required onchange="markDirty()"></div>
+            <div class="col-3"><label class="form-label">Buenas</label><input type="number" id="buenas" class="form-control" required onchange="markDirty()"></div>
+            <div class="col-3"><label class="form-label">Revisar</label><input type="number" id="revisar" class="form-control" required onchange="markDirty()"></div>
+            <div class="col-3"><label class="form-label">Malas</label><input type="number" id="malas" class="form-control" required onchange="markDirty()"></div>
+
+            <div class="col-12"><label class="form-label">Observaciones</label><textarea id="obs" class="form-control" rows="1" onchange="markDirty()"></textarea></div>
+            
+            <div class="col-12 mt-3">
+              <button type="button" class="btn btn-success w-100" onclick="saveProduccion()">GUARDAR PRODUCCIÓN</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="mt-4">
+          <h6>Historial Reciente</h6>
+          <table class="table table-sm table-striped" style="font-size: 0.85rem;">
+            <tbody id="listaData"></tbody>
+          </table>
         </div>
       </div>
-    </form>
 
-    <div class="historial-container">
-      <h5>Mis registros grabados</h5>
-      <div class="table-responsive">
-        <table class="table table-hover mt-2">
-          <thead class="table-dark">
-            <tr><th>Fecha</th><th>Ref</th><th>Total</th><th>Acciones</th></tr>
-          </thead>
-          <tbody id="listaData"></tbody>
-        </table>
+      <div class="tab-pane fade" id="averia-panel">
+        <form id="formAveria">
+          <div class="mb-3">
+            <label class="form-label">Prensa</label>
+            <select id="av-prensa" class="form-select" required></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo de Avería</label>
+            <select id="av-tipo" class="form-select" required></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tiempo Parada (Horas)</label>
+            <input type="number" step="0.1" id="av-tiempo" class="form-control" placeholder="Ej: 0.5">
+          </div>
+          <button type="button" class="btn btn-warning w-100" onclick="saveAveria()">REGISTRAR AVERÍA</button>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ==========================================
-  // CONFIGURACIÓN: COPIA TU URL AQUÍ ABAJO
-  // ==========================================
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzP46sUeQONRX68C9DPX2_i22vdQY7NuSosVjKU-4k73i5uLvwNWvY44QVgAp3V2cUv5w/exec"; 
-  // ==========================================
-
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwCCOrlFtkfPjzTxRp5WF2sWf4NyfewpYWXhQEKfjEo1ZViRZlviTE31_TwtAcQ1h4v4A/exec"; // <--- PEGA TU URL
+  
   let currentOperario = "";
-  let cacheData = [];
+  let isDirty = false;
 
-  async function postToGoogle(payload) {
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      return await response.json();
-    } catch (e) {
-      console.error(e);
-      return null;
+  function markDirty() { isDirty = true; }
+
+  function checkDataLoss(e) {
+    if (isDirty) {
+      if (!confirm("Tienes datos sin guardar en producción. ¿Seguro que quieres cambiar de pestaña?")) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      isDirty = false;
     }
+  }
+
+  async function callAPI(action, data = {}) {
+    const response = await fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, ...data })
+    });
+    return await response.json();
   }
 
   async function handleLogin() {
-    const u = document.getElementById("user").value;
-    const p = document.getElementById("pass").value;
-    const b = document.getElementById("loginBtn");
-    
-    if(!u || !p) return;
-    b.disabled = true; b.innerText = "Conectando...";
-
-    const res = await postToGoogle({ action: "login", usuario: u, password: p });
-    
-    if(res && res.success) {
+    const res = await callAPI("login", { usuario: document.getElementById("user").value, password: document.getElementById("pass").value });
+    if (res && res.success) {
       currentOperario = res.user;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("app-content").style.display = "block";
-      document.getElementById("userTag").innerText = "Operario: " + currentOperario;
-      loadConfig();
-      loadHistory();
-    } else {
-      document.getElementById("errMsg").style.display = "block";
-      b.disabled = false; b.innerText = "Iniciar Sesión";
-    }
-  }
-
-  async function loadConfig() {
-    const cfg = await postToGoogle({ action: "getConfig" });
-    if(cfg) {
+      document.getElementById("userTag").innerText = "👤 " + currentOperario;
+      const cfg = await callAPI("getConfig");
       fillSelect("turno", cfg.turnos);
       fillSelect("prensa", cfg.prensas);
+      fillSelect("av-prensa", cfg.prensas);
       fillSelect("referencia", cfg.referencias);
       fillSelect("material", cfg.materiales);
-    }
+      fillSelect("av-tipo", cfg.averias);
+      loadHistory();
+    } else { alert("Error de acceso"); }
   }
 
-  function fillSelect(id, items) {
+  function fillSelect(id, list) {
     const s = document.getElementById(id);
-    s.innerHTML = '<option value="">Seleccionar...</option>';
-    items.forEach(i => s.add(new Option(i, i)));
+    s.innerHTML = '<option value="">--</option>';
+    list.forEach(i => s.add(new Option(i, i)));
   }
 
-  async function saveData() {
-    const btn = document.getElementById("saveBtn");
-    btn.disabled = true; btn.innerText = "Grabando en Excel...";
+  async function saveProduccion() {
+    const t = parseInt(document.getElementById("total").value) || 0;
+    const b = parseInt(document.getElementById("buenas").value) || 0;
+    const r = parseInt(document.getElementById("revisar").value) || 0;
+    const m = parseInt(document.getElementById("malas").value) || 0;
+
+    // VALIDACIÓN OBLIGATORIA
+    if (t !== (b + r + m)) {
+      alert(`⚠️ ERROR DE SUMA:\nTotal piezas (${t}) no coincide con la suma de:\nBuenas (${b}) + Revisar (${r}) + Malas (${m}) = ${b+r+m}`);
+      return;
+    }
 
     const registro = {
       id: document.getElementById("rowId").value,
       operario: currentOperario,
       dia: document.getElementById("dia").value, mes: document.getElementById("mes").value,
+      horas: document.getElementById("horas").value,
       turno: document.getElementById("turno").value, prensa: document.getElementById("prensa").value,
       referencia: document.getElementById("referencia").value, material: document.getElementById("material").value,
-      lote: document.getElementById("lote").value, total: document.getElementById("total").value,
-      buenas: document.getElementById("buenas").value, revisar: document.getElementById("revisar").value,
-      malas: document.getElementById("malas").value, observaciones: document.getElementById("obs").value
+      lote: document.getElementById("lote").value, total: t, buenas: b, revisar: r, malas: m,
+      observaciones: document.getElementById("obs").value
     };
 
-    const res = await postToGoogle({ action: "save", registro: registro });
-    if(res && res.success) {
+    const res = await callAPI("save", { registro });
+    if (res.success) {
       alert(res.message);
-      document.getElementById("formProduccion").reset();
+      document.getElementById("formProd").reset();
       document.getElementById("rowId").value = "";
+      isDirty = false;
       loadHistory();
     }
-    btn.disabled = false; btn.innerText = "GRABAR EN EXCEL";
+  }
+
+  async function saveAveria() {
+    const registro = {
+      operario: currentOperario,
+      prensa: document.getElementById("av-prensa").value,
+      tipo: document.getElementById("av-tipo").value,
+      tiempo: document.getElementById("av-tiempo").value
+    };
+    if (!registro.prensa || !registro.tipo) return alert("Prensa y Tipo son obligatorios");
+    
+    const res = await callAPI("saveAveria", { registro });
+    if (res.success) {
+      alert(res.message);
+      document.getElementById("formAveria").reset();
+    }
   }
 
   async function loadHistory() {
-    const data = await postToGoogle({ action: "getRecords", operario: currentOperario });
-    if(data) {
-      cacheData = data;
-      const t = document.getElementById("listaData");
-      t.innerHTML = "";
-      data.forEach(r => {
-        t.innerHTML += `<tr>
-          <td>${r.dia}/${r.mes}</td>
-          <td>${r.referencia}</td>
-          <td>${r.total}</td>
-          <td>
-            <button class="btn btn-sm btn-warning" onclick="editRow('${r.id}')">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteRow('${r.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      });
-    }
-  }
-
-  function editRow(id) {
-    const r = cacheData.find(x => x.id === id);
-    if(!r) return;
-    document.getElementById("rowId").value = r.id;
-    document.getElementById("dia").value = r.dia;
-    document.getElementById("mes").value = r.mes;
-    document.getElementById("turno").value = r.turno;
-    document.getElementById("prensa").value = r.prensa;
-    document.getElementById("referencia").value = r.referencia;
-    document.getElementById("material").value = r.material;
-    document.getElementById("lote").value = r.lote;
-    document.getElementById("total").value = r.total;
-    document.getElementById("buenas").value = r.buenas;
-    document.getElementById("revisar").value = r.revisar;
-    document.getElementById("malas").value = r.malas;
-    document.getElementById("obs").value = r.observaciones;
-    window.scrollTo(0,0);
-  }
-
-  async function deleteRow(id) {
-    if(confirm("¿Borrar definitivamente este registro del Excel?")) {
-      const res = await postToGoogle({ action: "delete", id: id });
-      if(res) loadHistory();
-    }
+    const data = await callAPI("getRecords", { operario: currentOperario });
+    const tbody = document.getElementById("listaData");
+    tbody.innerHTML = "";
+    data.forEach(r => {
+      tbody.innerHTML += `<tr><td>${r.dia}/${r.mes}</td><td>${r.referencia}</td><td>${r.total} u.</td>
+      <td><button class="btn btn-sm btn-outline-warning" onclick="editRow('${r.id}')">✏️</button></td></tr>`;
+    });
   }
 </script>
 </body>
