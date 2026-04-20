@@ -3,33 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistema Producción y Averías</title>
+  <title>Control de Planta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; padding: 15px; }
-    .main-card { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    body { background-color: #f4f7f6; padding: 10px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .main-container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     #app-content { display: none; }
-    .nav-tabs { margin-bottom: 20px; }
-    .form-label { font-weight: 600; font-size: 0.9rem; }
+    .nav-tabs { border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
+    .nav-link { font-weight: bold; color: #6c757d; }
+    .nav-link.active { color: #0d6efd !important; border-bottom: 3px solid #0d6efd !important; border: none; }
+    .form-label { font-weight: 600; font-size: 0.85rem; color: #495057; }
+    .section-title { border-left: 4px solid #0d6efd; padding-left: 10px; margin-bottom: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<div class="main-card">
+<div class="main-container">
   <div id="login-section">
-    <h4 class="text-center mb-4">Acceso Planta</h4>
-    <input type="text" id="user" class="form-control mb-2" placeholder="Usuario">
-    <input type="password" id="pass" class="form-control mb-3" placeholder="Contraseña">
-    <button class="btn btn-primary w-100" onclick="handleLogin()">Entrar</button>
+    <div class="text-center mb-4">
+      <h3>Acceso Operarios</h3>
+      <p class="text-muted">Introduce tus credenciales para comenzar</p>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Usuario</label>
+      <input type="text" id="user" class="form-control form-control-lg">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Contraseña</label>
+      <input type="password" id="pass" class="form-control form-control-lg">
+    </div>
+    <button class="btn btn-primary btn-lg w-100" onclick="handleLogin()" id="loginBtn">Entrar al Sistema</button>
   </div>
 
   <div id="app-content">
-    <div class="d-flex justify-content-between mb-3">
-      <span id="userTag" class="badge bg-secondary p-2"></span>
-      <button class="btn btn-sm btn-link text-danger" onclick="location.reload()">Salir</button>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <span id="userTag" class="badge bg-primary fs-6 p-2"></span>
+      <button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Cerrar Sesión</button>
     </div>
 
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
       <li class="nav-item">
         <button class="nav-link active" id="prod-tab" data-bs-toggle="tab" data-bs-target="#prod-panel" type="button" onclick="checkDataLoss(event)">Producción</button>
       </li>
@@ -42,55 +54,69 @@
       <div class="tab-pane fade show active" id="prod-panel">
         <form id="formProd">
           <input type="hidden" id="rowId">
-          <div class="row g-2">
-            <div class="col-4"><label class="form-label">Día</label><input type="number" id="dia" class="form-control" required onchange="markDirty()"></div>
-            <div class="col-4"><label class="form-label">Mes</label><input type="number" id="mes" class="form-control" required onchange="markDirty()"></div>
-            <div class="col-4"><label class="form-label">Horas</label><input type="number" step="0.1" id="horas" class="form-control" required onchange="markDirty()"></div>
+          <div class="row g-3">
+            <div class="col-4 col-md-2"><label class="form-label">Día</label><input type="number" id="dia" class="form-control" onchange="markDirty()"></div>
+            <div class="col-4 col-md-2"><label class="form-label">Mes</label><input type="number" id="mes" class="form-control" onchange="markDirty()"></div>
+            <div class="col-4 col-md-2"><label class="form-label">Horas Trab.</label><input type="number" step="0.1" id="horas" class="form-control" placeholder="Ej: 8" onchange="markDirty()"></div>
+            <div class="col-6 col-md-3"><label class="form-label">Turno</label><select id="turno" class="form-select" onchange="markDirty()"></select></div>
+            <div class="col-6 col-md-3"><label class="form-label">Prensa</label><select id="prensa" class="form-select" onchange="markDirty()"></select></div>
             
-            <div class="col-6"><label class="form-label">Turno</label><select id="turno" class="form-select" required onchange="markDirty()"></select></div>
-            <div class="col-6"><label class="form-label">Prensa</label><select id="prensa" class="form-select" required onchange="markDirty()"></select></div>
+            <div class="col-md-6"><label class="form-label">Referencia</label><select id="referencia" class="form-select" onchange="markDirty()"></select></div>
+            <div class="col-md-6"><label class="form-label">Material</label><select id="material" class="form-select" onchange="markDirty()"></select></div>
             
-            <div class="col-6"><label class="form-label">Referencia</label><select id="referencia" class="form-select" required onchange="markDirty()"></select></div>
-            <div class="col-6"><label class="form-label">Material</label><select id="material" class="form-select" required onchange="markDirty()"></select></div>
+            <div class="col-12"><label class="form-label">Lote Bobina</label><input type="text" id="lote" class="form-control" onchange="markDirty()"></div>
             
-            <div class="col-12"><label class="form-label">Lote Bobina</label><input type="text" id="lote" class="form-control" required onchange="markDirty()"></div>
-            
-            <div class="col-3"><label class="form-label text-primary">Total</label><input type="number" id="total" class="form-control border-primary" required onchange="markDirty()"></div>
-            <div class="col-3"><label class="form-label">Buenas</label><input type="number" id="buenas" class="form-control" required onchange="markDirty()"></div>
-            <div class="col-3"><label class="form-label">Revisar</label><input type="number" id="revisar" class="form-control" required onchange="markDirty()"></div>
-            <div class="col-3"><label class="form-label">Malas</label><input type="number" id="malas" class="form-control" required onchange="markDirty()"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-primary">Piezas Totales</label><input type="number" id="total" class="form-control border-primary" onchange="markDirty()"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-success">Buenas</label><input type="number" id="buenas" class="form-control" onchange="markDirty()"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-warning">A Revisar</label><input type="number" id="revisar" class="form-control" onchange="markDirty()"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-danger">Malas</label><input type="number" id="malas" class="form-control" onchange="markDirty()"></div>
 
             <div class="col-12"><label class="form-label">Observaciones</label><textarea id="obs" class="form-control" rows="1" onchange="markDirty()"></textarea></div>
             
-            <div class="col-12 mt-3">
-              <button type="button" class="btn btn-success w-100" onclick="saveProduccion()">GUARDAR PRODUCCIÓN</button>
+            <div class="col-12 mt-4">
+              <button type="button" class="btn btn-success btn-lg w-100 shadow-sm" onclick="saveProduccion()">GRABAR PRODUCCIÓN</button>
             </div>
           </div>
         </form>
 
-        <div class="mt-4">
-          <h6>Historial Reciente</h6>
-          <table class="table table-sm table-striped" style="font-size: 0.85rem;">
-            <tbody id="listaData"></tbody>
-          </table>
+        <div class="mt-5">
+          <h6 class="text-muted">Mis últimos registros</h6>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <tbody id="listaData" style="font-size: 0.9rem;"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <div class="tab-pane fade" id="averia-panel">
+        <h5 class="section-title">Registro de Avería / Incidencia</h5>
         <form id="formAveria">
-          <div class="mb-3">
-            <label class="form-label">Prensa</label>
-            <select id="av-prensa" class="form-select" required></select>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nº de Máquina</label>
+              <select id="av-maquina" class="form-select" required></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tipo de Avería</label>
+              <select id="av-tipo" class="form-select" required></select>
+            </div>
+            <div class="col-6 col-md-6">
+              <label class="form-label">Hora de Paro</label>
+              <input type="time" id="av-paro" class="form-control" required>
+            </div>
+            <div class="col-6 col-md-6">
+              <label class="form-label">Hora de Arranque</label>
+              <input type="time" id="av-arranque" class="form-control">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Observaciones</label>
+              <textarea id="av-obs" class="form-control" rows="3" placeholder="Detalla qué ha pasado..."></textarea>
+            </div>
+            <div class="col-12 mt-4">
+              <button type="button" class="btn btn-warning btn-lg w-100" onclick="saveAveria()">REGISTRAR AVERÍA</button>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Tipo de Avería</label>
-            <select id="av-tipo" class="form-select" required></select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Tiempo Parada (Horas)</label>
-            <input type="number" step="0.1" id="av-tiempo" class="form-control" placeholder="Ej: 0.5">
-          </div>
-          <button type="button" class="btn btn-warning w-100" onclick="saveAveria()">REGISTRAR AVERÍA</button>
         </form>
       </div>
     </div>
@@ -99,16 +125,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwCCOrlFtkfPjzTxRp5WF2sWf4NyfewpYWXhQEKfjEo1ZViRZlviTE31_TwtAcQ1h4v4A/exec"; // <--- PEGA TU URL
+  // ==========================================
+  // CONFIGURACIÓN: COPIA TU URL AQUÍ
+  // ==========================================
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzP3rv0NBTm9Gho7BE3P-nwR5SjcxHdE6SV6hTuF_89y-tmxwTR1wDsx8BMxabJlHsxkg/exec"; 
   
   let currentOperario = "";
   let isDirty = false;
 
   function markDirty() { isDirty = true; }
 
+  // Alerta de pérdida de datos
   function checkDataLoss(e) {
     if (isDirty) {
-      if (!confirm("Tienes datos sin guardar en producción. ¿Seguro que quieres cambiar de pestaña?")) {
+      if (!confirm("Atención: Tienes datos escritos en el formulario de producción que no has guardado. ¿Quieres cambiar de pestaña de todas formas?")) {
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -118,35 +148,64 @@
   }
 
   async function callAPI(action, data = {}) {
-    const response = await fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action, ...data })
-    });
-    return await response.json();
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, ...data })
+      });
+      return await response.json();
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión con el servidor.");
+      return null;
+    }
   }
 
   async function handleLogin() {
-    const res = await callAPI("login", { usuario: document.getElementById("user").value, password: document.getElementById("pass").value });
+    const u = document.getElementById("user").value;
+    const p = document.getElementById("pass").value;
+    const btn = document.getElementById("loginBtn");
+
+    if(!u || !p) return alert("Escribe usuario y contraseña");
+    
+    btn.disabled = true; btn.innerText = "Verificando...";
+
+    const res = await callAPI("login", { usuario: u, password: p });
     if (res && res.success) {
       currentOperario = res.user;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("app-content").style.display = "block";
       document.getElementById("userTag").innerText = "👤 " + currentOperario;
-      const cfg = await callAPI("getConfig");
+      
+      // CARGAR FECHA ACTUAL AUTOMÁTICAMENTE
+      const hoy = new Date();
+      document.getElementById("dia").value = hoy.getDate();
+      document.getElementById("mes").value = hoy.getMonth() + 1;
+
+      loadConfig();
+      loadHistory();
+    } else {
+      alert("Usuario o contraseña incorrectos");
+      btn.disabled = false; btn.innerText = "Entrar al Sistema";
+    }
+  }
+
+  async function loadConfig() {
+    const cfg = await callAPI("getConfig");
+    if(cfg) {
       fillSelect("turno", cfg.turnos);
       fillSelect("prensa", cfg.prensas);
-      fillSelect("av-prensa", cfg.prensas);
+      fillSelect("av-maquina", cfg.prensas);
       fillSelect("referencia", cfg.referencias);
       fillSelect("material", cfg.materiales);
       fillSelect("av-tipo", cfg.averias);
-      loadHistory();
-    } else { alert("Error de acceso"); }
+    }
   }
 
   function fillSelect(id, list) {
     const s = document.getElementById(id);
-    s.innerHTML = '<option value="">--</option>';
+    s.innerHTML = '<option value="">Seleccionar...</option>';
     list.forEach(i => s.add(new Option(i, i)));
   }
 
@@ -156,28 +215,35 @@
     const r = parseInt(document.getElementById("revisar").value) || 0;
     const m = parseInt(document.getElementById("malas").value) || 0;
 
-    // VALIDACIÓN OBLIGATORIA
     if (t !== (b + r + m)) {
-      alert(`⚠️ ERROR DE SUMA:\nTotal piezas (${t}) no coincide con la suma de:\nBuenas (${b}) + Revisar (${r}) + Malas (${m}) = ${b+r+m}`);
+      alert(`⚠️ ERROR DE SUMA:\nEl Total (${t}) debe ser igual a la suma de Buenas+Revisar+Malas (${b+r+m}).\n\nPor favor, corrige las cantidades.`);
       return;
     }
 
     const registro = {
       id: document.getElementById("rowId").value,
       operario: currentOperario,
-      dia: document.getElementById("dia").value, mes: document.getElementById("mes").value,
+      dia: document.getElementById("dia").value, 
+      mes: document.getElementById("mes").value,
       horas: document.getElementById("horas").value,
-      turno: document.getElementById("turno").value, prensa: document.getElementById("prensa").value,
-      referencia: document.getElementById("referencia").value, material: document.getElementById("material").value,
-      lote: document.getElementById("lote").value, total: t, buenas: b, revisar: r, malas: m,
+      turno: document.getElementById("turno").value, 
+      prensa: document.getElementById("prensa").value,
+      referencia: document.getElementById("referencia").value, 
+      material: document.getElementById("material").value,
+      lote: document.getElementById("lote").value, 
+      total: t, buenas: b, revisar: r, malas: m,
       observaciones: document.getElementById("obs").value
     };
 
     const res = await callAPI("save", { registro });
-    if (res.success) {
+    if (res && res.success) {
       alert(res.message);
       document.getElementById("formProd").reset();
       document.getElementById("rowId").value = "";
+      // Resetear fecha tras limpiar formulario
+      const hoy = new Date();
+      document.getElementById("dia").value = hoy.getDate();
+      document.getElementById("mes").value = hoy.getMonth() + 1;
       isDirty = false;
       loadHistory();
     }
@@ -186,14 +252,20 @@
   async function saveAveria() {
     const registro = {
       operario: currentOperario,
-      prensa: document.getElementById("av-prensa").value,
+      maquina: document.getElementById("av-maquina").value,
       tipo: document.getElementById("av-tipo").value,
-      tiempo: document.getElementById("av-tiempo").value
+      paro: document.getElementById("av-paro").value,
+      arranque: document.getElementById("av-arranque").value,
+      observaciones: document.getElementById("av-obs").value
     };
-    if (!registro.prensa || !registro.tipo) return alert("Prensa y Tipo son obligatorios");
-    
+
+    if (!registro.maquina || !registro.tipo || !registro.paro) {
+      alert("Por favor, indica al menos la máquina, el tipo de avería y la hora de paro.");
+      return;
+    }
+
     const res = await callAPI("saveAveria", { registro });
-    if (res.success) {
+    if (res && res.success) {
       alert(res.message);
       document.getElementById("formAveria").reset();
     }
@@ -201,12 +273,18 @@
 
   async function loadHistory() {
     const data = await callAPI("getRecords", { operario: currentOperario });
-    const tbody = document.getElementById("listaData");
-    tbody.innerHTML = "";
-    data.forEach(r => {
-      tbody.innerHTML += `<tr><td>${r.dia}/${r.mes}</td><td>${r.referencia}</td><td>${r.total} u.</td>
-      <td><button class="btn btn-sm btn-outline-warning" onclick="editRow('${r.id}')">✏️</button></td></tr>`;
-    });
+    if(data) {
+      const tbody = document.getElementById("listaData");
+      tbody.innerHTML = "";
+      data.forEach(r => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${r.dia}/${r.mes}</strong></td>
+            <td>${r.referencia}</td>
+            <td class="text-end text-primary fw-bold">${r.total} u.</td>
+          </tr>`;
+      });
+    }
   }
 </script>
 </body>
